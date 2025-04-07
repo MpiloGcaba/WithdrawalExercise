@@ -1,17 +1,22 @@
+import com.example.withdrawalExercise.models.WithdrawalEvent
+import com.example.withdrawalExercise.models.WithdrawalStatus
+import com.google.gson.Gson
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.web.bind.annotation.*
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sns.SnsClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/bank")
-class BankAccountController @Autowired constructor(private val jdbcTemplate: JdbcTemplate) {
-
-    private val snsClient: SnsClient = SnsClient.builder()
-        .region(Region.YOUR_REGION) // Specify your region
-        .build()
+class BankAccountController @Autowired constructor(
+    private val jdbcTemplate: JdbcTemplate,
+    private val snsClient: SnsClient,
+    @Value("\${aws.sns.withdrawal-topic-arn}") private val withdrawalTopicArn: String,
+    private val gson: Gson
+) {
 
     @PostMapping("/withdraw")
     fun withdraw(@RequestParam("accountId") accountId: Long, @RequestParam("amount") amount: BigDecimal): String {
@@ -26,15 +31,7 @@ class BankAccountController @Autowired constructor(private val jdbcTemplate: Jdb
 
             if (rowsAffected > 0) {
                 // After a successful withdrawal, publish a withdrawal event to SNS
-                val event = WithdrawalEvent(amount, accountId, "SUCCESSFUL")
-                val eventJson = event.toJson() // Convert event to JSON
-                val snsTopicArn = "arn:aws:sns:YOUR_REGION:YOUR_ACCOUNT_ID:YOUR_TOPIC_NAME"
-                val publishRequest = PublishRequest.builder()
-                    .message(eventJson)
-                    .topicArn(snsTopicArn)
-                    .build()
-
-                snsClient.publish(publishRequest)
+                publishWithdrawalEvent(accountId, amount, WithdrawalStatus.SUCCESSFUL)
                 "Withdrawal successful"
             } else {
                 // In case the update fails for reasons other than a balance check
@@ -45,15 +42,23 @@ class BankAccountController @Autowired constructor(private val jdbcTemplate: Jdb
             "Insufficient funds for withdrawal"
         }
     }
-}
 
-data class WithdrawalEvent(
-    val amount: BigDecimal,
-    val accountId: Long,
-    val status: String
-) {
-    // Convert to JSON String
-    fun toJson(): String {
-        return "{\"amount\":\"$amount\",\"accountId\":$accountId,\"status\":\"$status\"}"
+    private fun publishWithdrawalEvent(
+        accountId: Long,
+        amount: BigDecimal,
+        status: WithdrawalStatus
+    ) {
+
+        val event = WithdrawalEvent(amount, accountId, status)
+        val eventJson = gson.toJson(event)
+
+        val publishRequest = PublishRequest.builder()
+            .message(eventJson)
+            .topicArn(withdrawalTopicArn)
+            .build()
+
+
+        snsClient.publish(publishRequest)
+
     }
 }
