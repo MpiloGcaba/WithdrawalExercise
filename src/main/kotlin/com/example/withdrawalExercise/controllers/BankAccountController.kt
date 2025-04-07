@@ -1,8 +1,11 @@
 import com.example.withdrawalExercise.models.WithdrawalEvent
+import com.example.withdrawalExercise.models.WithdrawalResponseDTO
 import com.example.withdrawalExercise.models.WithdrawalStatus
 import com.google.gson.Gson
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.web.bind.annotation.*
 import software.amazon.awssdk.services.sns.SnsClient
@@ -19,7 +22,10 @@ class BankAccountController @Autowired constructor(
 ) {
 
     @PostMapping("/withdraw")
-    fun withdraw(@RequestParam("accountId") accountId: Long, @RequestParam("amount") amount: BigDecimal): String {
+    fun withdraw(
+        @RequestParam("accountId") accountId: Long,
+        @RequestParam("amount") amount: BigDecimal
+    ): ResponseEntity<WithdrawalResponseDTO> {
         // Check current balance
         val sql = "SELECT balance FROM accounts WHERE id = ?"
         val currentBalance = jdbcTemplate.queryForObject(sql, arrayOf(accountId), BigDecimal::class.java)
@@ -32,14 +38,17 @@ class BankAccountController @Autowired constructor(
             if (rowsAffected > 0) {
                 // After a successful withdrawal, publish a withdrawal event to SNS
                 publishWithdrawalEvent(accountId, amount, WithdrawalStatus.SUCCESSFUL)
-                "Withdrawal successful"
+                ResponseEntity.status(HttpStatus.OK)
+                    .body(WithdrawalResponseDTO(body = "Withdrawal successful"))
             } else {
                 // In case the update fails for reasons other than a balance check
-                "Withdrawal failed"
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(WithdrawalResponseDTO(body = "Withdrawal failed"))
             }
         } else {
             // Insufficient funds
-            "Insufficient funds for withdrawal"
+            ResponseEntity.status(HttpStatus.OK)
+                .body(WithdrawalResponseDTO(body = "Insufficient funds for withdrawal"))
         }
     }
 
