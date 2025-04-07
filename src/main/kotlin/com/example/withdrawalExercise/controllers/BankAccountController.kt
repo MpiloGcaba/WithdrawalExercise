@@ -30,6 +30,12 @@ class BankAccountController @Autowired constructor(
         val sql = "SELECT balance FROM accounts WHERE id = ?"
         val currentBalance = jdbcTemplate.queryForObject(sql, arrayOf(accountId), BigDecimal::class.java)
 
+        // Here we assume account ids start from 1L
+        if (amount <= BigDecimal.ZERO || accountId <= 0L) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(WithdrawalResponseDTO(body = "Invalid withdrawal amount", error = "Bad Request"))
+        }
+
         return if (currentBalance != null && currentBalance >= amount) {
             // Update balance
             val updateSql = "UPDATE accounts SET balance = balance - ? WHERE id = ?"
