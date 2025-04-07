@@ -3,7 +3,6 @@ import org.springframework.web.bind.annotation.*
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sns.SnsClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
-import software.amazon.awssdk.services.sns.model.PublishResponse
 import java.math.BigDecimal
 
 @RestController
