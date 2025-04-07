@@ -1,4 +1,4 @@
-package com.example.WithdrawalExercise
+package com.example.withdrawalExercise
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

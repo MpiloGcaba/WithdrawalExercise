@@ -1,4 +1,4 @@
-package com.example.WithdrawalExercise
+package com.example.withdrawalExercise
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
