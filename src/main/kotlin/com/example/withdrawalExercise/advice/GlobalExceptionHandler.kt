@@ -1,17 +1,14 @@
-package com.example.withdrawalExercise.exceptionHandlers
+package com.example.withdrawalExercise.advice
 
-import com.example.withdrawalExercise.models.WithdrawalResponseDTO
+import com.example.withdrawalExercise.buildResponseEntity
+import com.example.withdrawalExercise.dataResponse
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-
 class DatabaseException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
 class InsufficientFundsException(message: String) : RuntimeException(message)
 class AccountNotFoundException(message: String) : RuntimeException(message)
-
-
-typealias dataResponse = ResponseEntity<WithdrawalResponseDTO>
+class SNSPublishingException(message: String) : RuntimeException(message)
 
 @ControllerAdvice
 class GlobalExceptionHandler {
@@ -31,16 +28,8 @@ class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.NOT_FOUND, "Account not found")
     }
 
-    @ExceptionHandler(Exception::class)
-    fun handleException(e: AccountNotFoundException): dataResponse {
-        return buildResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "Unknown exception")
-    }
-
-    private fun buildResponseEntity(
-        httpStatus: HttpStatus,
-        bodyMessage: String,
-        errorMessage: String? = null
-    ): dataResponse {
-        return ResponseEntity(WithdrawalResponseDTO(body = bodyMessage, error = errorMessage), httpStatus)
+    @ExceptionHandler(SNSPublishingException::class)
+    fun handleSNSPublishingException(e: SNSPublishingException): dataResponse {
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, "SNS Publishing error")
     }
 }
