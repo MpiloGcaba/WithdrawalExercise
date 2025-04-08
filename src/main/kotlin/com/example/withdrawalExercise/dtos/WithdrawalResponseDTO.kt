@@ -1,4 +1,4 @@
-package com.example.withdrawalExercise.dto
+package com.example.withdrawalExercise.dtos
 
 data class WithdrawalResponseDTO(
     val body: String,

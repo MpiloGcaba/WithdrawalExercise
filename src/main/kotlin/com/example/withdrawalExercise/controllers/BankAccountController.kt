@@ -1,8 +1,10 @@
+package com.example.withdrawalExercise.controllers
+
 import com.example.withdrawalExercise.advice.SNSPublishingException
 import com.example.withdrawalExercise.buildResponseEntity
 import com.example.withdrawalExercise.dataResponse
 import com.example.withdrawalExercise.model.WithdrawalEvent
-import com.example.withdrawalExercise.dto.WithdrawalResponseDTO
+import com.example.withdrawalExercise.dtos.WithdrawalResponseDTO
 import com.example.withdrawalExercise.model.WithdrawalStatus
 import com.example.withdrawalExercise.repository.AccountRepository
 import com.google.gson.Gson

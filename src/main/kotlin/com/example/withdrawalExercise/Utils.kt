@@ -1,6 +1,6 @@
 package com.example.withdrawalExercise
 
-import com.example.withdrawalExercise.dto.WithdrawalResponseDTO
+import com.example.withdrawalExercise.dtos.WithdrawalResponseDTO
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 
