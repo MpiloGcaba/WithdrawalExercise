@@ -1,4 +1,4 @@
-package com.example.withdrawalExercise.models
+package com.example.withdrawalExercise.model
 
 enum class WithdrawalStatus(private val status: String) {
     SUCCESSFUL("successful"),
